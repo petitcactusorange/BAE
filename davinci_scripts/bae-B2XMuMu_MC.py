@@ -130,7 +130,7 @@ _BdecaySelection = Selection( "TurboB", Algorithm = _B, RequiredSelections = [su
 SeqB = SelectionSequence('SeqB', TopSelection = _BdecaySelection)
 
 
-tupleB = DecayTreeTuple("bar-muon-tuple")
+tupleB = DecayTreeTuple("bae-muon-MC")
 
 tupleB.Inputs = [SeqB.outputLocation()]
 tupleB.Decay = "[B+ -> ^(J/psi(1S) -> ^mu+ ^mu-) ^K+]CC"

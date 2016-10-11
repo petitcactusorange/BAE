@@ -81,7 +81,7 @@ SeqB = SelectionSequence('SeqB', TopSelection = _BdecaySelection)
 
 # Here we just put the output candidates in an Tuple
 
-tupleB = DecayTreeTuple("Bplus_Tuple")
+tupleB = DecayTreeTuple("bae-muon-data")
 tupleB.Inputs = [SeqB.outputLocation()]
 tupleB.Decay = "[B+ -> ^K+ ^(J/psi(1S) -> ^mu+ ^mu-)]CC"
 
