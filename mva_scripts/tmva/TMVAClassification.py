@@ -15,7 +15,7 @@ DEFAULT_INFNAMESIG  = '../../bae-mc-12215002-2012-down.root'
 
 DEFAULT_TREESIG  = "bar-muon-tuple/DecayTree"
 DEFAULT_TREEBKG  = "bar-muon-tuple/DecayTree"
- 
+
 DEFAULT_METHODS  =  "BDTG"#
 
 # Print usage help
@@ -25,10 +25,10 @@ def usage():
     print "  -m | --methods    : gives methods to be run (default: all methods)"
     print "  -is | --inputfile signal  : name of input ROOT file (default: '%s')" %  DEFAULT_INFNAMESIG
     print "  -ib | --inputfile background : name of input ROOT file (default: '%s')" % DEFAULT_INFNAMEBKG
- 
+
     print "  -o | --outputfile : name of output ROOT file containing results (default: '%s')" % DEFAULT_OUTFNAME
     print "  -t | --inputtrees signal : input ROOT Trees for signal and background (default: '%s %s')" % DEFAULT_TREESIG
-   
+
     print "  -t | --inputtrees : input ROOT Trees for signal and background (default: '%s %s')" % DEFAULT_TREEBKG
     print "  -v | --verbose"
     print "  -? | --usage      : print this help message"
@@ -70,7 +70,7 @@ def main():
         elif o in ("-o", "--outputfile"):
             outfname = a
         elif o in ("-ts", "--inputree_signal"):
-            treeNameSig = a 
+            treeNameSig = a
         elif o in ("-tb", "--inputtree_background"):
             treeNameBkg = a
         elif o in ("-v", "--verbose"):
@@ -85,36 +85,36 @@ def main():
 
     # Import ROOT classes
     from ROOT import gSystem, gROOT, gApplication, TFile, TTree, TCut
-    
-    # check ROOT version, give alarm if 5.18 
+
+    # check ROOT version, give alarm if 5.18
     if gROOT.GetVersionCode() >= 332288 and gROOT.GetVersionCode() < 332544:
         print "*** You are running ROOT version 5.18, which has problems in PyROOT such that TMVA"
         print "*** does not run properly (function calls with enums in the argument are ignored)."
         print "*** Solution: either use CINT or a C++ compiled version (see TMVA/macros or TMVA/examples),"
         print "*** or use another ROOT version (e.g., ROOT 5.19)."
         sys.exit(1)
-    
+
     # Logon not automatically loaded through PyROOT (logon loads TMVA library) load also GUI
     gROOT.SetMacroPath( "./" )
-    gROOT.Macro       ( "./TMVAlogon.C" )    
+    gROOT.Macro       ( "./TMVAlogon.C" )
     gROOT.LoadMacro   ( "./TMVAGui.C" )
-    
+
     # Import TMVA classes from ROOT
     from ROOT import TMVA
 
     # Output file
     outputFile = TFile( outfname, 'RECREATE' )
-    
+
     # Create instance of TMVA factory (see TMVA/macros/TMVAClassification.C for more factory options)
-    # All TMVA output can be suppressed by removing the "!" (not) in 
+    # All TMVA output can be suppressed by removing the "!" (not) in
     # front of the "Silent" argument in the option string
-    factory = TMVA.Factory( "TMVAClassification", outputFile, 
+    factory = TMVA.Factory( "TMVAClassification", outputFile,
                             "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" )
 
     # Set verbosity
     factory.SetVerbose( verbose )
-    
-    # If you wish to modify default settings 
+
+    # If you wish to modify default settings
     # (please check "src/Config.h" to see all available global options)
     #    gConfig().GetVariablePlotting()).fTimesRMS = 8.0
     #    gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory"
@@ -130,10 +130,15 @@ def main():
     #factory.AddVariable ("GpsTime", "", "" , 'F')
 
     #Lb variables
+
+    #Apply preselection cuts
+    factory.AddVariable( "Bplus_P", "Bplus_P", "" , 'F' )
     factory.AddVariable( "Bplus_PT", "Bplus_PT", "" , 'F' )
+
     factory.AddVariable( "Bplus_DIRA_OWNPV",                "Bplus_DIRAOWNPV", "", 'F' )
     factory.AddVariable( "Bplus_FDCHI2_OWNPV",                "Bplus_FDCHI2_OWNPV", "", 'F' )
     factory.AddVariable( "Bplus_ENDVERTEX_CHI2",                "Bplus_ENDVERTEX_CHI2", "", 'F' )
+    factory.AddVariable ("Bplus_IPCHI2_OWNPV", "Bplus_IPCHI2_OWNPV", "", "F")
 
 
 
@@ -142,7 +147,17 @@ def main():
     factory.AddVariable( "Jpsi_DIRA_OWNPV",                "Jpsi_DIRAOWNPV", "", 'F' )
     factory.AddVariable( "Jpsi_FDCHI2_OWNPV",                "Jpsi_FDCHI2_OWNPV", "", 'F' )
     factory.AddVariable( "Jpsi_ENDVERTEX_CHI2",                "Jpsi_ENDVERTEX_CHI2", "", 'F' )
-    factory.AddVariable( "Kplus_PT",   "Kplus_PT", "" , 'F' )
+    factory.AddVariable( "Jpsi_IPCHI2_OWNPV",                "Jpsi_IPCHI2_OWNPV", "", 'F' )
+
+    factory.AddVariable ("muplus_IPCHI2_OWNPV", "muplus_IPCHI2_OWNPV", "", "F")
+    factory.AddVariable ("muminus_IPCHI2_OWNPV", "muminus_IPCHI2_OWNPV", "", "F")
+    factory.AddVariable ("Jpsi_IPCHI2_OWNPV", "Jpsi_IPCHI2_OWNPV", "", "F")
+
+
+    factory.AddVariable( "Kplus_P",   "Kplus_P", "" , 'F' )
+    factory.AddVariable ("Kplus_IPCHI2_OWNPV", "Kplus_IPCHI2_OWNPV", "", "F")
+
+
     input_signal = TFile.Open( infnameSig )
     input_background = TFile.Open( infnameBkg )
 
@@ -154,19 +169,22 @@ def main():
 
     print 'is this modern hell ? '
 
-    print input_signal 
+    print input_signal
     print input_background
-    print signal 
-    print background 
+    print signal
+    print background
 
 
 
     factory.AddSignalTree    ( signal,     signalWeight     )
     factory.AddBackgroundTree( background, backgroundWeight )
-    
-    mycutSig = TCut( "" ) #
-    mycutBkg = TCut( "" ) #upper sideband
-    
+    PIDK = TCut ("(Kplus_ProbNNk - Kplus_ProbNNpi)>0.1 && Kplus_ProbNNk > 0.2")
+    PIDMu = TCut("muplus_ProbNNmu > 0.25 && muminus_ProbNNmu > 0.25")
+    UpperSideBand = TCut ("Bplus_MM > 5300 ")
+    MCTruth = TCut("Bplus_BKGCAT == 40")
+    mycutSig = PIDK and PIDMu and MCTruth  #
+    mycutBkg = PIDK and PIDMu and UpperSideBand  #upper sideband
+
     # Here, the relevant variables are copied over in new, slim trees that are
     # used for TMVA training and testing
     # "SplitMode=Random" means that the input events are randomly shuffled before
@@ -189,31 +207,31 @@ def main():
     # Boosted Decision Trees
     if "BDTG" in mlist:
         factory.BookMethod( TMVA.Types.kBDT, "BDTG",
-                           "!H:!V:NTrees=1000:MinNodeSize=1.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" )                        
+                           "!H:!V:NTrees=1000:MinNodeSize=1.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" )
 
 
 
 
     # Train MVAs
     factory.TrainAllMethods()
-    
+
     # Test MVAs
     factory.TestAllMethods()
-    
+
     # Evaluate MVAs
-    factory.EvaluateAllMethods()    
-    
+    factory.EvaluateAllMethods()
+
     # Save the output.
     outputFile.Close()
-    
+
     print "=== wrote root file %s\n" % outfname
     print "=== TMVAClassification is done!\n"
-    
-    # open the GUI for the result macros    
+
+    # open the GUI for the result macros
     gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
-    
+
     # keep the ROOT thread running
-    gApplication.Run() 
+    gApplication.Run()
 
 # ----------------------------------------------------------
 
