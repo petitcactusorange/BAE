@@ -1,9 +1,9 @@
 
 """
-Authors : P.Owen, Y.Amhis 
+Authors : P.Owen, Y.Amhis
 When : July 2016
-What : Option file to make Data tuples. 
-First re-run the stripping, add and add a kaon. Easy enough 
+What : Option file to make Data tuples.
+First re-run the stripping, add and add a kaon. Easy enough
 
 
 
@@ -29,7 +29,7 @@ from Configurables import DecayTreeTuple, FitDecayTrees, TupleToolRecoStats, Tup
 from DecayTreeTuple.Configuration import *
 from PhysSelPython.Wrappers import MergedSelection
 
-# 
+#
 name = 'bukmumu'
 
 """
@@ -38,7 +38,7 @@ Options for building Stripping21 (was 20, but we want 21)
 """
 
 # Build the streams and stripping object
-# WARNING : the Stripping version needs to be updated 
+# WARNING : the Stripping version needs to be updated
 
 
 #from StrippingArchive.Stripping20r0p3.StrippingB2XMuMu import B2XMuMuConf as builder
@@ -51,7 +51,7 @@ Options for building Stripping21 (was 20, but we want 21)
 
 
 
-# But what we really want is to make a dimuon and a Kaon  
+# But what we really want is to make a dimuon and a Kaon
 from StandardParticles import StdLooseKaons as kaons
 
 LowQ2MuonsOnDemand = DataOnDemand(Location = "/Event/Dimuon/Phys/B2XMuMuIncl_InclDiMuLowQ2Line/Particles")
@@ -73,7 +73,7 @@ subsel = Selection("subsel",Algorithm = subalg, RequiredSelections = [_selDimuon
 _B = CombineParticles()
 _B.DaughtersCuts = { "K+" : "(PT>500*MeV)&(MIPCHI2DV(PRIMARY) > 9)" }
 _B.MotherCut = "(DMASS('B+')<5000*MeV) & (VFASPF(VCHI2)/VFASPF(VDOF)<5.0) & (BPVDIRA > 0.999)" #need to check these cuts
-_B.DecayDescriptors = [ "[B+ -> J/psi(1S) K+]cc" ] 
+_B.DecayDescriptors = [ "[B+ -> J/psi(1S) K+]cc" ]
 
 
 _BdecaySelection = Selection( "TurboB", Algorithm = _B, RequiredSelections = [subsel,kaons] )
@@ -91,10 +91,10 @@ tupleB.ToolList =  [
     , "TupleToolEventInfo"
     , "TupleToolRecoStats"
    # , "TupleBuKmmFit"
-] # Probably need to add many more Tools. 
+] # Probably need to add many more Tools.
 
 
-tupleB.addBranches ({         
+tupleB.addBranches ({
       "Kplus" :  "[B+ -> ^K+ (J/psi(1S) -> mu+ mu-)]CC",
       "Jpsi" :  "[B+ -> K+ ^(J/psi(1S) -> mu+ mu-)]CC",
       "muplus" :  "[B+ -> K+ (J/psi(1S) -> ^mu+ mu-)]CC",
@@ -106,9 +106,9 @@ tupleB.addBranches ({
 
 LoKi_All=tupleB.addTupleTool("LoKi::Hybrid::TupleTool/LoKi_All")
 LoKi_All.Variables = {
-        'MINIPCHI2' : "MIPCHI2DV(PRIMARY)", 
+        'MINIPCHI2' : "MIPCHI2DV(PRIMARY)",
         'MINIP' : "MIPDV(PRIMARY)",
-        'IPCHI2_OWNPV' : "BPVIPCHI2()", 
+        'IPCHI2_OWNPV' : "BPVIPCHI2()",
         'IP_OWNPV' : "BPVIP()"
 }
 
@@ -171,6 +171,8 @@ LoKi_B.Variables = {
 list = [
       "L0DiMuonDecision"
     , "L0MuonDecision"
+    ,"L0ElectronDecision"
+    ,"L0HadronDecision"
     , "Hlt1TrackAllL0Decision"
     , "Hlt1TrackMuonDecision"
     , "Hlt1DiMuonLowMassDecision"
@@ -183,7 +185,7 @@ list = [
     , "Hlt2DiMuonDetachedDecision"
     , "Hlt2SingleMuonDecision"
     , "Hlt2DiMuonDetachedHeavyDecision"
-] #Is the trigger list uptodate? 
+] #Is the trigger list uptodate?
 
 
 tupleB.Bplus.ToolList += [ "TupleToolTISTOS" ]
@@ -224,7 +226,7 @@ TrackSmeared("TrackSmearing").Scale = 0.5
 TrackSmearingSeq = GaudiSequencer("TrackSmearingSeq")
 TrackSmearingSeq.Members = [ TrackSmeared("TrackSmearing") ]
 """
-#try to do it like in the starterkit 
+#try to do it like in the starterkit
 
 """
 

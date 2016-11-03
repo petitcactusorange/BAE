@@ -1,9 +1,9 @@
 
 """
-Authors : P.Owen, Y.Amhis 
+Authors : P.Owen, Y.Amhis
 When : July 2016
-What : Option file to make MC tuples. 
-First re-run the stripping, add and add a kaon. Easy enough 
+What : Option file to make MC tuples.
+First re-run the stripping, add and add a kaon. Easy enough
 
 
 
@@ -32,7 +32,7 @@ from Configurables import TupleToolANNPID
 from DecayTreeTuple.Configuration import *
 from PhysSelPython.Wrappers import MergedSelection
 
-# 
+#
 name = 'bukmumu'
 
 """
@@ -54,7 +54,7 @@ DefaultTrackingCuts().Cuts  = { "Chi2Cut" : [ 0, 4 ],
 
 #
 # Build the streams and stripping object
-# WARNING : the Stripping version needs to be updated 
+# WARNING : the Stripping version needs to be updated
 
 
 #from StrippingArchive.Stripping20r0p3.StrippingB2XMuMu import B2XMuMuConf as builder
@@ -73,7 +73,7 @@ print config
 #config['MuonPID'] = -999999
 config['CONFIG']['HLT_FILTER']=""
 #stripping='stripping20'
-stripping = 'stripping21' 
+stripping = 'stripping21'
 
 #get the configuration dictionary from the database
 #config  = strippingConfiguration(stripping)
@@ -89,9 +89,9 @@ for line in lb.lines():
     print line.name()
     if line.name() == 'StrippingB2XMuMuInclusive_InclDiMuHighQ2Line':
         AllStreams.appendLines([line])
-       
+
     if line.name() == 'StrippingB2XMuMuInclusive_InclDiMuLowQ2Line':
-        AllStreams.appendLines([line])    
+        AllStreams.appendLines([line])
 
 sc = StrippingConf( Streams = [ AllStreams ],
                     MaxCandidates = 2000
@@ -101,7 +101,7 @@ sc = StrippingConf( Streams = [ AllStreams ],
 
 
 
-# But what we really want is to make a dimuon and a Kaon  
+# But what we really want is to make a dimuon and a Kaon
 from StandardParticles import StdLooseKaons as kaons
 
 LowQ2MuonsOnDemand = DataOnDemand(Location = "Phys/B2XMuMuInclusive_InclDiMuLowQ2Line/Particles")
@@ -123,7 +123,7 @@ subsel = Selection("subsel",Algorithm = subalg, RequiredSelections = [_selDimuon
 _B = CombineParticles()
 _B.DaughtersCuts = { "K+" : "PT>500*MeV" }
 _B.MotherCut = "(DMASS('B+')<5000*MeV) & (VFASPF(VCHI2)<25.0)" #need to check these cuts
-_B.DecayDescriptors = [ "[B+ -> J/psi(1S) K+]cc" ] 
+_B.DecayDescriptors = [ "[B+ -> J/psi(1S) K+]cc" ]
 
 
 _BdecaySelection = Selection( "TurboB", Algorithm = _B, RequiredSelections = [subsel,kaons] )
@@ -155,19 +155,19 @@ tupleB.ToolList =  [
     "TupleToolPropertime",
     "TupleToolRecoStats",
     "TupleToolTrackInfo",
-    "TupleToolTISTOS", 
+    "TupleToolTISTOS",
     "TupleToolBremInfo",
-    "TupleToolPhotonInfo"#, 
+    "TupleToolPhotonInfo"#,
    ,"TupleToolTrackIsolation"
     , "TupleToolANNPID"
 
-] # Probably need to add many more Tools. 
+] # Probably need to add many more Tools.
 
 
 
 
 
-tupleB.addBranches ({         
+tupleB.addBranches ({
       "Kplus" :  "[B+ -> ^K+ (J/psi(1S) -> mu+ mu-)]CC",
       "Jpsi" :  "[B+ -> K+ ^(J/psi(1S) -> mu+ mu-)]CC",
       "muplus" :  "[B+ -> K+ (J/psi(1S) -> ^mu+ mu-)]CC",
@@ -179,9 +179,9 @@ tupleB.addBranches ({
 
 LoKi_All=tupleB.addTupleTool("LoKi::Hybrid::TupleTool/LoKi_All")
 LoKi_All.Variables = {
-        'MINIPCHI2' : "MIPCHI2DV(PRIMARY)", 
+        'MINIPCHI2' : "MIPCHI2DV(PRIMARY)",
         'MINIP' : "MIPDV(PRIMARY)",
-        'IPCHI2_OWNPV' : "BPVIPCHI2()", 
+        'IPCHI2_OWNPV' : "BPVIPCHI2()",
         'IP_OWNPV' : "BPVIP()"
 }
 
@@ -245,6 +245,9 @@ LoKi_B.Variables = {
 list = [
       "L0DiMuonDecision"
     , "L0MuonDecision"
+     ,"L0ElectronDecision"
+      ,"L0HadronDecision"
+                 
     , "Hlt1TrackAllL0Decision"
     , "Hlt1TrackMuonDecision"
     , "Hlt1DiMuonLowMassDecision"
@@ -257,7 +260,7 @@ list = [
     , "Hlt2DiMuonDetachedDecision"
     , "Hlt2SingleMuonDecision"
     , "Hlt2DiMuonDetachedHeavyDecision"
-] #Is the trigger list uptodate? 
+] #Is the trigger list uptodate?
 
 
 
@@ -267,10 +270,10 @@ tupleB.Bplus.ToolList += [ "TupleToolTISTOS" ]
 tupleB.Bplus.addTool( TupleToolTISTOS, name = "TupleToolTISTOS" )
 tupleB.Bplus.TupleToolTISTOS.Verbose = True
 tupleB.Bplus.TupleToolTISTOS.TriggerList = list
-tupleB.Bplus.TupleToolTISTOS.Verbose = True 
-tupleB.Bplus.TupleToolTISTOS.VerboseL0= True 
-tupleB.Bplus.TupleToolTISTOS.VerboseHlt1= True 
-tupleB.Bplus.TupleToolTISTOS.VerboseHlt2= True 
+tupleB.Bplus.TupleToolTISTOS.Verbose = True
+tupleB.Bplus.TupleToolTISTOS.VerboseL0= True
+tupleB.Bplus.TupleToolTISTOS.VerboseHlt1= True
+tupleB.Bplus.TupleToolTISTOS.VerboseHlt2= True
 
 
 
@@ -282,10 +285,10 @@ tupleB.Jpsi.TupleToolTISTOS.TriggerList = list
 
 
 
-tupleB.Jpsi.TupleToolTISTOS.Verbose = True 
-tupleB.Jpsi.TupleToolTISTOS.VerboseL0= True 
-tupleB.Jpsi.TupleToolTISTOS.VerboseHlt1= True 
-tupleB.Jpsi.TupleToolTISTOS.VerboseHlt2= True 
+tupleB.Jpsi.TupleToolTISTOS.Verbose = True
+tupleB.Jpsi.TupleToolTISTOS.VerboseL0= True
+tupleB.Jpsi.TupleToolTISTOS.VerboseHlt1= True
+tupleB.Jpsi.TupleToolTISTOS.VerboseHlt2= True
 
 tupleB.addTool(TupleToolTrackInfo, name = "TupleToolTrackInfo")
 tupleB.TupleToolTrackInfo.Verbose=True
@@ -334,7 +337,7 @@ TrackSmeared("TrackSmearing").Scale = 0.5
 TrackSmearingSeq = GaudiSequencer("TrackSmearingSeq")
 TrackSmearingSeq.Members = [ TrackSmeared("TrackSmearing") ]
 """
-#try to do it like in the starterkit 
+#try to do it like in the starterkit
 
 """
 
