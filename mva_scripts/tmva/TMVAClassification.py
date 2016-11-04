@@ -9,12 +9,12 @@ import getopt # command line parser
 
 # Default settings for command line arguments
 DEFAULT_OUTFNAME = "TMVA.root"
-DEFAULT_INFNAMEBKG  =  '../../bae-mc-12215002-2012-down.root'
+DEFAULT_INFNAMEBKG  =  '../../data.root'
 
-DEFAULT_INFNAMESIG  = '../../bae-mc-12215002-2012-down.root'
+DEFAULT_INFNAMESIG  = '../../mc.root'
 
-DEFAULT_TREESIG  = "bar-muon-tuple/DecayTree"
-DEFAULT_TREEBKG  = "bar-muon-tuple/DecayTree"
+DEFAULT_TREESIG  = "bae-muon-MC/DecayTree"
+DEFAULT_TREEBKG  = "bae-muon-data/DecayTree"
 
 DEFAULT_METHODS  =  "BDTG"#
 
@@ -136,7 +136,7 @@ def main():
     factory.AddVariable( "Bplus_PT", "Bplus_PT", "" , 'F' )
 
     factory.AddVariable( "Bplus_DIRA_OWNPV",                "Bplus_DIRAOWNPV", "", 'F' )
-    factory.AddVariable( "Bplus_FDCHI2_OWNPV",                "Bplus_FDCHI2_OWNPV", "", 'F' )
+    factory.AddVariable( "Bplus_FD_CHI2",                "Bplus_FD_CHI2", "", 'F' )
     factory.AddVariable( "Bplus_ENDVERTEX_CHI2",                "Bplus_ENDVERTEX_CHI2", "", 'F' )
     factory.AddVariable ("Bplus_IPCHI2_OWNPV", "Bplus_IPCHI2_OWNPV", "", "F")
 
@@ -144,8 +144,8 @@ def main():
 
 
     factory.AddVariable( "Jpsi_PT",   "Jpsi_PT", "" , 'F' )
-    factory.AddVariable( "Jpsi_DIRA_OWNPV",                "Jpsi_DIRAOWNPV", "", 'F' )
-    factory.AddVariable( "Jpsi_FDCHI2_OWNPV",                "Jpsi_FDCHI2_OWNPV", "", 'F' )
+
+    #factory.AddVariable( "Jpsi_FDCHI2_ORIVX",                "Jpsi_FDCHI2_ORIVX", "", 'F' )
     factory.AddVariable( "Jpsi_ENDVERTEX_CHI2",                "Jpsi_ENDVERTEX_CHI2", "", 'F' )
     factory.AddVariable( "Jpsi_IPCHI2_OWNPV",                "Jpsi_IPCHI2_OWNPV", "", 'F' )
 
@@ -178,12 +178,26 @@ def main():
 
     factory.AddSignalTree    ( signal,     signalWeight     )
     factory.AddBackgroundTree( background, backgroundWeight )
+
+    #add trigger selection
+
+
+
+    L0 = TCut ("Bplus_L0HadronDecisionTOS || Bplus_L0MuonDecision || Bplus_L0DiMuonDecision")
+    HLT1 = TCut("")
+    HLT2 = TCut("")
+    Trigger = L0 and HLT1 and HLT2
+
     PIDK = TCut ("(Kplus_ProbNNk - Kplus_ProbNNpi)>0.1 && Kplus_ProbNNk > 0.2")
-    PIDMu = TCut("muplus_ProbNNmu > 0.25 && muminus_ProbNNmu > 0.25")
-    UpperSideBand = TCut ("Bplus_MM > 5300 ")
-    MCTruth = TCut("Bplus_BKGCAT == 40")
-    mycutSig = PIDK and PIDMu and MCTruth  #
-    mycutBkg = PIDK and PIDMu and UpperSideBand  #upper sideband
+    PIDMu = TCut("muplus_ProbNNmu > 0.25 && muminus_ProbNNmu > 0.25") #change to NNK NNPi
+
+    PID = PIDK and PIDMu
+
+    UpperSideBand = TCut ("Bplus_MM > 5400 ")
+
+    MCTruth = TCut("Bplus_BKGCAT < 50")
+    mycutSig = PID and MCTruth  #
+    mycutBkg = PID and UpperSideBand  #upper sideband
 
     # Here, the relevant variables are copied over in new, slim trees that are
     # used for TMVA training and testing
@@ -228,7 +242,7 @@ def main():
     print "=== TMVAClassification is done!\n"
 
     # open the GUI for the result macros
-    gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
+    #gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
 
     # keep the ROOT thread running
     gApplication.Run()
