@@ -90,6 +90,21 @@ tupleB.ToolList =  [
       "TupleToolKinematic"
     , "TupleToolEventInfo"
     , "TupleToolRecoStats"
+    ,    "TupleToolTrigger",
+        "TupleToolPid",
+        "TupleToolPrimaries",
+        "TupleToolAngles",
+        "TupleToolEventInfo",
+        "TupleToolGeometry",
+        "TupleToolKinematic",
+        "TupleToolPropertime",
+        "TupleToolRecoStats",
+        "TupleToolTrackInfo",
+        "TupleToolTISTOS",
+        "TupleToolBremInfo",
+        "TupleToolPhotonInfo"#,
+       ,"TupleToolTrackIsolation"
+        , "TupleToolANNPID"
    # , "TupleBuKmmFit"
 ] # Probably need to add many more Tools.
 
