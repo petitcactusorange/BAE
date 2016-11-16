@@ -9,11 +9,12 @@ import getopt # command line parser
 
 # Default settings for command line arguments
 DEFAULT_OUTFNAME = "TMVA.root"
-DEFAULT_INFNAMEBKG  =  '../../data.root'
+DEFAULT_INFNAMEBKG  =  '../../Paris-14112016/BAE-small-data.root'
+DEFAULT_INFNAMESIG  = '../../Paris-14112016/K1mumu-mc-2012-reduced.root'
 
-DEFAULT_INFNAMESIG  = '../../mc.root'
 
-DEFAULT_TREESIG  = "bae-muon-MC/DecayTree"
+#DEFAULT_TREESIG  = "bae-muon-MC/DecayTree"
+DEFAULT_TREESIG  = "DecayTree"
 DEFAULT_TREEBKG  = "bae-muon-data/DecayTree"
 
 DEFAULT_METHODS  =  "BDTG"#
@@ -114,48 +115,29 @@ def main():
     # Set verbosity
     factory.SetVerbose( verbose )
 
-    # If you wish to modify default settings
-    # (please check "src/Config.h" to see all available global options)
-    #    gConfig().GetVariablePlotting()).fTimesRMS = 8.0
-    #    gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory"
 
-    # Define the input variables that shall be used for the classifier training
-    # note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
-    # [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
-    #factory.AddVariable( "myvar1 := var1+var2", 'F' )
-    #factory.AddVariable( "myvar2 := var1-var2", "Expression 2", "", 'F' )
-    #factory.AddVariable( "var3",                "Variable 3", "units", 'F' )
-    #factory.AddVariable( "var4",                "Variable 4", "units", 'F' )
-    #factory.AddVariable ("Polarity", "", "" , 'F')
-    #factory.AddVariable ("GpsTime", "", "" , 'F')
-
-    #Lb variables
-
-    #Apply preselection cuts
-    factory.AddVariable( "Bplus_P", "Bplus_P", "" , 'F' )
-    factory.AddVariable( "Bplus_PT", "Bplus_PT", "" , 'F' )
-
-    factory.AddVariable( "Bplus_DIRA_OWNPV",                "Bplus_DIRAOWNPV", "", 'F' )
-    factory.AddVariable( "Bplus_FD_CHI2",                "Bplus_FD_CHI2", "", 'F' )
-    factory.AddVariable( "Bplus_ENDVERTEX_CHI2",                "Bplus_ENDVERTEX_CHI2", "", 'F' )
-    factory.AddVariable ("Bplus_IPCHI2_OWNPV", "Bplus_IPCHI2_OWNPV", "", "F")
+    #B+ variables
+    factory.AddVariable( "Bplus_P", "Bplus_P", "" , 'D' )
+    factory.AddVariable( "Bplus_PT", "Bplus_PT", "" , 'D' )
+    factory.AddVariable( "acos(Bplus_DIRA_OWNPV)",                "acos(Bplus_DIRAOWNPV)", "", 'D' )
+    factory.AddVariable( "Bplus_FD_CHI2",                "Bplus_FD_CHI2", "", 'D' )
+    factory.AddVariable( "Bplus_ENDVERTEX_CHI2",                "Bplus_ENDVERTEX_CHI2", "", 'D' )
 
 
 
 
-    factory.AddVariable( "Jpsi_PT",   "Jpsi_PT", "" , 'F' )
+    #Dimuon variables
+    factory.AddVariable( "Jpsi_PT",   "Jpsi_PT", "" , 'D' )
 
-    #factory.AddVariable( "Jpsi_FDCHI2_ORIVX",                "Jpsi_FDCHI2_ORIVX", "", 'F' )
-    factory.AddVariable( "Jpsi_ENDVERTEX_CHI2",                "Jpsi_ENDVERTEX_CHI2", "", 'F' )
-    factory.AddVariable( "Jpsi_IPCHI2_OWNPV",                "Jpsi_IPCHI2_OWNPV", "", 'F' )
-
-    factory.AddVariable ("muplus_IPCHI2_OWNPV", "muplus_IPCHI2_OWNPV", "", "F")
-    factory.AddVariable ("muminus_IPCHI2_OWNPV", "muminus_IPCHI2_OWNPV", "", "F")
-    factory.AddVariable ("Jpsi_IPCHI2_OWNPV", "Jpsi_IPCHI2_OWNPV", "", "F")
+    #muons variables
+    factory.AddVariable ("log(muplus_IPCHI2_OWNPV)", "log(muplus_IPCHI2_OWNPV)", "", "D")
+    factory.AddVariable ("log(muminus_IPCHI2_OWNPV)", "log(muminus_IPCHI2_OWNPV)", "", "D")
 
 
-    factory.AddVariable( "Kplus_P",   "Kplus_P", "" , 'F' )
-    factory.AddVariable ("Kplus_IPCHI2_OWNPV", "Kplus_IPCHI2_OWNPV", "", "F")
+    #Kaon variables
+    factory.AddVariable( "Kplus_P",   "Kplus_P", "" , 'D' )
+    factory.AddVariable(  "Kplus_PT",   "Kplus_PT", "" , 'D' )
+    factory.AddVariable ("log(Kplus_IPCHI2_OWNPV)", "log(Kplus_IPCHI2_OWNPV)", "", "D")
 
 
     input_signal = TFile.Open( infnameSig )
@@ -179,73 +161,69 @@ def main():
     factory.AddSignalTree    ( signal,     signalWeight     )
     factory.AddBackgroundTree( background, backgroundWeight )
 
-    #add trigger selection
+    # These are the spectators
+    factory.AddSpectator ("Bplus_MM", "Bplus_MM", "",2000, 7000)
+    factory.AddSpectator ("Jpsi_MM", "Jpsi_MM", "",2000, 7000)
 
+    # A collection of cuts to apply
+    Sanity = TCut (" Bplus_ENDVERTEX_CHI2>0  && Bplus_P < 5e5 && Bplus_PT < 5e5 && Bplus_ENDVERTEX_CHI2 < 5 && Bplus_FD_CHI2 < 1e5 && Kplus_MINIPCHI2 > 9")
 
-
+    #Trigger
     L0 = TCut ("Bplus_L0HadronDecisionTOS || Bplus_L0MuonDecision || Bplus_L0DiMuonDecision")
-    HLT1 = TCut("")
-    HLT2 = TCut("")
+    HLT1 = TCut("Bplus_Hlt1TrackMuonDecisionTOS")
+    HLT2 = TCut("Bplus_Hlt2DiMuonDetachedDecisionTOS ||  Bplus_Hlt2DiMuonDetachedHeavyDecisionTOS")
     Trigger = L0 and HLT1 and HLT2
-
+    #PID
     PIDK = TCut ("(Kplus_ProbNNk - Kplus_ProbNNpi)>0.1 && Kplus_ProbNNk > 0.2")
     PIDMu = TCut("muplus_ProbNNmu > 0.25 && muminus_ProbNNmu > 0.25") #change to NNK NNPi
-
     PID = PIDK and PIDMu
+    #upper side band
+    UpperSideBand = TCut ("Bplus_MM > 5500 ")
+    #total signal cut
+    SignalCut = TCut ("")
+    SignalCut += Sanity
+    #total background cut
+    BackgroundCut = TCut("")
+    BackgroundCut +=Sanity
+    BackgroundCut +=UpperSideBand
+    BackgroundCut += PID
 
-    UpperSideBand = TCut ("Bplus_MM > 5400 ")
 
-    MCTruth = TCut("Bplus_BKGCAT < 50")
-    mycutSig = PID and MCTruth  #
-    mycutBkg = PID and UpperSideBand  #upper sideband
+    print  "Dump the total Signal cut just for checking ..."
+    print SignalCut
+    print "Dump the total Background cut just for checking ..."
+    print BackgroundCut
+
 
     # Here, the relevant variables are copied over in new, slim trees that are
     # used for TMVA training and testing
     # "SplitMode=Random" means that the input events are randomly shuffled before
     # splitting them into training and test samples
-    #factory.PrepareTrainingAndTestTree( mycutSig, mycutBkg,
-#                                        "nTrain_Signal=1000:nTrain_Background=1000:SplitMode=Random:NormMode=NumEvents:!V" )
-#
-
-   #   factory->PrepareTrainingAndTestTree( mycut,
- #                                           "NSigTrain=3000:NBkgTrain=3000:NSigTest=3000:NBkgTest=3000:SplitMode=Random:!V" );
- #   factory.PrepareTrainingAndTestTree( mycutSig, mycutBkg,
-  #                                      "nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V" )
-
-    # --------------------------------------------------------------------------------------------------
-
-    # ---- Book MVA methods
-    #
+    factory.PrepareTrainingAndTestTree( SignalCut, BackgroundCut,
+                                            "nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V" )
 
 
-    # Boosted Decision Trees
+   # --------------------------------------------------------------------------------------------------
+   # ---- Book MVA methods
+   #
+   # Boosted Decision Trees
     if "BDTG" in mlist:
         factory.BookMethod( TMVA.Types.kBDT, "BDTG",
                            "!H:!V:NTrees=1000:MinNodeSize=1.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" )
-
-
-
-
+    if "BDT" in mlist:
+      factory.BookMethod( TMVA.Types.kBDT, "BDT",
+                           "!H:!V:NTrees=200:MinNodeSize=5.0%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=-1" )
     # Train MVAs
     factory.TrainAllMethods()
-
     # Test MVAs
     factory.TestAllMethods()
-
     # Evaluate MVAs
     factory.EvaluateAllMethods()
-
     # Save the output.
     outputFile.Close()
 
     print "=== wrote root file %s\n" % outfname
     print "=== TMVAClassification is done!\n"
-
-    # open the GUI for the result macros
-    #gROOT.ProcessLine( "TMVAGui(\"%s\")" % outfname )
-
-    # keep the ROOT thread running
-    gApplication.Run()
 
 # ----------------------------------------------------------
 
